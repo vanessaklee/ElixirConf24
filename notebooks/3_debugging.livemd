@@ -1,0 +1,106 @@
+<!-- livebook:{"app_settings":{"access_type":"public","output_type":"rich","slug":"scholars2"}} -->
+
+# 3. Debug: Katherine St. John & Vanessa Wayne Da Silva
+
+## The dbg Macro
+
+Elixir introduced the dbg macro in late 2022 for improved debugging: `Kernel.dbg/2`. It empowers users to peek into pipelines. We'll use it in this notebook to investigate the pipeline that normalizes Professors' names.
+
+<!-- livebook:{"break_markdown":true} -->
+
+First, some anonymous functions to display the results with Kino.
+
+```elixir
+import Kino.Shorts
+import OpenAlexApi
+
+show = fn results, frame2 ->
+  Kino.Frame.clear(frame2)
+
+  msg =
+    Kino.HTML.new("""
+      <h3>#{length(results)} author(s) match your search!</h3>
+    """)
+
+  msg2 =
+    Kino.HTML.new("""
+      <h4>Debug: Turn Steps On/Off</h4>
+    """)
+
+  Kino.Frame.append(frame2, msg)
+  Kino.Frame.append(frame2, grid(OpenAlexApi.extract_names(results), columns: 3))
+  Kino.Frame.append(frame2, msg2)
+end
+```
+
+### Problem #1
+
+We received a complaint that a Professor's name is incorrect. `Vanessa Wayne da Silva` appears on our app with a capital "D".
+
+### Problem #2
+
+We have found 0 publications for a proflific computational biologist, `Katherine St. John`.
+
+<!-- livebook:{"break_markdown":true} -->
+
+### A Form: Input Professor's Name
+
+An input field to enter a Professor's name.
+
+```elixir
+form =
+  Kino.Control.form(
+    [text_box: Kino.Input.text("Enter the name of the scholar:")],
+    submit: "Search",
+    reset_on_submit: true
+  )
+```
+
+The app searches our external API for any Professors matching that name. The results go through a series of normalization steps. The results are below. After the results, `dbg` displays each step in the pipeline. Turn on/off any of the steps in the pipeline to debug.
+
+```elixir
+import OpenAlexApi
+frame2 = Kino.Frame.new() |> Kino.render()
+
+[form: form]
+|> Kino.Control.tagged_stream()
+|> Kino.listen(fn {:form, event} ->
+  scholar = URI.encode(event.data.text_box)
+  Kino.Frame.clear(frame2, to: frame2.pid) |> Kino.render()
+
+  results =
+    if scholar == "", do: [], else: OpenAlexApi.author_search(scholar)
+
+  show.(results, frame2)
+
+  results
+  |> get_original_names()
+  |> remove_punctuations()
+  |> replace_hyphens()
+  |> transform_names()
+  |> capitalize_names()
+  |> dbg
+end)
+```
+
+### Problem #2
+
+We have found 0 publications for a proflific computational biologist, Katherine St. John.
+
+```elixir
+prof = %{
+  name: "Katherine St. John",
+  institution: "Hunter College CUNY",
+  orcid: nil,
+  fields: ["Biochemistry", "Discrete mathematics", "Machine learning"]
+}
+
+prof
+|> OpenAlexPub.author_search()
+|> OpenAlexPub.orcid_filter(prof)
+|> OpenAlexPub.field_filter(prof)
+|> OpenAlexPub.instit_filter(prof)
+|> dbg()
+```
+
+<!-- livebook:{"offset":2718,"stamp":{"token":"XCP.0pNhxnIeLpGfv9O_z-VwuJ_as3l3NdbrZakRpZnAaEm71tN3OP41D45s2MALR-1-v-0vVPmb5HhZTEv8CeiSFvzMhOh_-SWw_vCQ2wArsoj8crc7BEhA3uQ","version":2}} -->

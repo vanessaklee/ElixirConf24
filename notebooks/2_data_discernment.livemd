@@ -1,0 +1,96 @@
+<!-- livebook:{"app_settings":{"access_type":"public","output_type":"rich","slug":"chart"}} -->
+
+# 2. Data Discernment
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.12.3"},
+  {:kino_vega_lite, "~> 0.1.10"}
+])
+```
+
+## Select University
+
+Right away, we will give the user a way to engage with our Livebook application. We will allow them to select a University.
+
+```elixir
+institution =
+  Kino.Shorts.read_select("University",
+    "University of Pennsylvania": "University of Pennsylvania",
+    MIT: "MIT",
+    Dartmouth: "Dartmouth",
+    "University of Michigan": "University of Michigan",
+    UCLA: "UCLA"
+  )
+
+:ok
+```
+
+## Chart the Data
+
+Use a "Remote execution" Smart Cell to attach to our Scholarship Companion application and return the number of publications per year from our external API.
+
+My external application was started with the following:
+
+```
+> iex --name livebook@vanessa.local --sname comp --cookie <secret> -S mix phx.server
+```
+
+In the "Remote execution" cell, enter the "NODE" name and the "COOKIE". Use the "ASSIGN TO" to assign the data returned to a variable. In this case, we are using `works`.
+
+<!-- livebook:{"attrs":{"assign_to":"works","code":"alias Companion.OpenAlex.Api\n\ninstitution\n|> Atom.to_string()\n|> Api.institution_works_by_year()\n","cookie":"","cookie_secret":"LB_COMP_COOKIE","node":"comp@Vanessas-MBP","node_secret":"","node_secret_value":null,"use_cookie_secret":true,"use_node_secret":false},"chunks":null,"kind":"Elixir.Kino.RemoteExecutionCell","livebook_object":"smart_cell"} -->
+
+```elixir
+require Kino.RPC
+node = :"comp@Vanessas-MBP"
+Node.set_cookie(node, String.to_atom(System.fetch_env!("LB_LB_COMP_COOKIE")))
+
+works =
+  Kino.RPC.eval_string(
+    node,
+    ~S"""
+    alias Companion.OpenAlex.Api
+
+    institution
+    |> Atom.to_string()
+    |> Api.institution_works_by_year()
+
+    """,
+    file: __ENV__.file
+  )
+```
+
+```elixir
+works
+```
+
+### Pie Chart Using VegaLite
+
+```elixir
+alias VegaLite, as: Vl
+
+Vl.new()
+|> Vl.data_from_values(works)
+|> Vl.mark(:arc)
+|> Vl.encode_field(:theta, "value", type: :quantitative)
+|> Vl.encode_field(:color, "year", type: :nominal)
+|> Vl.config(view: [stroke: nil])
+```
+
+### Bar Chart Using "Chart" Smart Cell
+
+<!-- livebook:{"attrs":{"chart_title":"Publications By Year","height":500,"layers":[{"active":true,"chart_type":"bar","color_field":null,"color_field_aggregate":null,"color_field_bin":null,"color_field_scale_scheme":null,"color_field_type":null,"data_variable":"works","geodata_color":"blue","latitude_field":null,"longitude_field":null,"x_field":"year","x_field_aggregate":null,"x_field_bin":null,"x_field_scale_type":null,"x_field_type":"nominal","y_field":"value","y_field_aggregate":null,"y_field_bin":null,"y_field_scale_type":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.Vl","width":750},"chunks":null,"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+Vl.new(width: 750, height: 500, title: "Publications By Year")
+|> Vl.data_from_values(works, only: ["year", "value"])
+|> Vl.mark(:bar)
+|> Vl.encode_field(:x, "year", type: :nominal)
+|> Vl.encode_field(:y, "value", type: :quantitative)
+```
+
+## Deploy the Notebook
+
+For these charts to provide value, we can deploy the notebook as an app. Click the "App Setting" icon (Rocketship in left menu).
+
+<!-- livebook:{"offset":3294,"stamp":{"token":"XCP.g90M7AgpWjy-ZverUoDwXAP9U02DdlMjA3n77K1pWBs34XHq6Z_OvJafNhEl7i_TfTzYlyadDn6ffEfTxn9dneAppzGv0nZmLusJD1LQKY_dAvZDVVk_9Zk","version":2}} -->

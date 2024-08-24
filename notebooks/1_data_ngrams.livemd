@@ -1,0 +1,120 @@
+<!-- livebook:{"app_settings":{"access_type":"public","auto_shutdown_ms":60000,"output_type":"rich","slug":"ngrams"}} -->
+
+# 1. Data (NGRAMS Dataset)
+
+## Ngrams Dataset
+
+[NGRAMS](https://github.com/ngrams-dev/general/wiki/REST-API) is an API for querying the Google Books Ngram Dataset.
+
+We will use the following endpoints:
+
+* Send a wildcard query and receive matching ngrams using a search request.
+* Send an ngram id and receive year-based match count information for that ngram.
+
+```elixir
+ngram_by_year = GoogleNgram.search("self-sacrifice")
+```
+
+### Chart
+
+In a smart cell, set the following:
+
+* Data: ngram_by_year
+* Chart: line
+* x-axis: year
+* y-axis: relMatchCount (The ngram's relative match count)
+* color: Age
+
+<!-- livebook:{"attrs":{"chart_title":"Modernism: Use of \"self-sacrifice\" since 1815","height":300,"layers":[{"active":true,"chart_type":"line","color_field":"Age","color_field_aggregate":null,"color_field_bin":null,"color_field_scale_scheme":"category10","color_field_type":"nominal","data_variable":"ngram_by_year","geodata_color":"blue","latitude_field":null,"longitude_field":null,"x_field":"Year","x_field_aggregate":null,"x_field_bin":null,"x_field_scale_type":null,"x_field_type":"temporal","y_field":"relMatchCount","y_field_aggregate":null,"y_field_bin":null,"y_field_scale_type":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.VegaLite","width":700},"chunks":null,"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+VegaLite.new(
+  width: 700,
+  height: 300,
+  title: "Modernism: Use of \"self-sacrifice\" since 1815"
+)
+|> VegaLite.data_from_values(ngram_by_year, only: ["Year", "relMatchCount", "Age"])
+|> VegaLite.mark(:line)
+|> VegaLite.encode_field(:x, "Year", type: :temporal)
+|> VegaLite.encode_field(:y, "relMatchCount", type: :quantitative)
+|> VegaLite.encode_field(:color, "Age", type: :nominal, scale: [scheme: "category10"])
+```
+
+```elixir
+bootstraps_by_year = GoogleNgram.search("duty")
+```
+
+<!-- livebook:{"attrs":{"chart_title":"Modernism: Use of \"duty\" since 1815","height":300,"layers":[{"active":true,"chart_type":"point","color_field":"Age","color_field_aggregate":null,"color_field_bin":null,"color_field_scale_scheme":null,"color_field_type":"nominal","data_variable":"bootstraps_by_year","geodata_color":"blue","latitude_field":null,"longitude_field":null,"x_field":"Year","x_field_aggregate":null,"x_field_bin":null,"x_field_scale_type":null,"x_field_type":"temporal","y_field":"relMatchCount","y_field_aggregate":null,"y_field_bin":null,"y_field_scale_type":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.VegaLite","width":700},"chunks":null,"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+VegaLite.new(width: 700, height: 300, title: "Modernism: Use of \"duty\" since 1815")
+|> VegaLite.data_from_values(bootstraps_by_year, only: ["Year", "relMatchCount", "Age"])
+|> VegaLite.mark(:point)
+|> VegaLite.encode_field(:x, "Year", type: :temporal)
+|> VegaLite.encode_field(:y, "relMatchCount", type: :quantitative)
+|> VegaLite.encode_field(:color, "Age", type: :nominal)
+```
+
+### Postmodernism
+
+```elixir
+skepticism_by_year = GoogleNgram.search("deconstruction")
+```
+
+<!-- livebook:{"attrs":{"chart_title":"Postmodernism: Use of \"deconstruction\" since 1815","height":null,"layers":[{"active":true,"chart_type":"bar","color_field":"Age","color_field_aggregate":null,"color_field_bin":null,"color_field_scale_scheme":null,"color_field_type":"nominal","data_variable":"skepticism_by_year","geodata_color":"blue","latitude_field":null,"longitude_field":null,"x_field":"Year","x_field_aggregate":null,"x_field_bin":null,"x_field_scale_type":null,"x_field_type":"temporal","y_field":"relMatchCount","y_field_aggregate":null,"y_field_bin":null,"y_field_scale_type":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.VegaLite","width":700},"chunks":null,"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+VegaLite.new(width: 700, title: "Postmodernism: Use of \"deconstruction\" since 1815")
+|> VegaLite.data_from_values(skepticism_by_year, only: ["Year", "relMatchCount", "Age"])
+|> VegaLite.mark(:bar)
+|> VegaLite.encode_field(:x, "Year", type: :temporal)
+|> VegaLite.encode_field(:y, "relMatchCount", type: :quantitative)
+|> VegaLite.encode_field(:color, "Age", type: :nominal)
+```
+
+```elixir
+mrelativism_by_year = GoogleNgram.search("moral relativism")
+```
+
+<!-- livebook:{"attrs":{"chart_title":"Postmodernism: Use of \"moral relativism\" since 1815","height":null,"layers":[{"active":true,"chart_type":"bar","color_field":"Age","color_field_aggregate":null,"color_field_bin":null,"color_field_scale_scheme":null,"color_field_type":"nominal","data_variable":"mrelativism_by_year","geodata_color":"blue","latitude_field":null,"longitude_field":null,"x_field":"Year","x_field_aggregate":null,"x_field_bin":null,"x_field_scale_type":null,"x_field_type":"temporal","y_field":"relMatchCount","y_field_aggregate":null,"y_field_bin":null,"y_field_scale_type":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.VegaLite","width":700},"chunks":null,"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+VegaLite.new(width: 700, title: "Postmodernism: Use of \"moral relativism\" since 1815")
+|> VegaLite.data_from_values(mrelativism_by_year, only: ["Year", "relMatchCount", "Age"])
+|> VegaLite.mark(:bar)
+|> VegaLite.encode_field(:x, "Year", type: :temporal)
+|> VegaLite.encode_field(:y, "relMatchCount", type: :quantitative)
+|> VegaLite.encode_field(:color, "Age", type: :nominal)
+```
+
+### Metamodernism
+
+```elixir
+colab_by_year = GoogleNgram.search("collaboration")
+```
+
+<!-- livebook:{"attrs":{"chart_title":"Metamodernism: Use of \"collaboration\" since 1815","height":null,"layers":[{"active":true,"chart_type":"bar","color_field":"Age","color_field_aggregate":null,"color_field_bin":null,"color_field_scale_scheme":null,"color_field_type":"nominal","data_variable":"colab_by_year","geodata_color":"blue","latitude_field":null,"longitude_field":null,"x_field":"Year","x_field_aggregate":null,"x_field_bin":null,"x_field_scale_type":null,"x_field_type":"temporal","y_field":"relMatchCount","y_field_aggregate":null,"y_field_bin":null,"y_field_scale_type":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.VegaLite","width":700},"chunks":null,"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+VegaLite.new(width: 700, title: "Metamodernism: Use of \"collaboration\" since 1815")
+|> VegaLite.data_from_values(colab_by_year, only: ["Year", "relMatchCount", "Age"])
+|> VegaLite.mark(:bar)
+|> VegaLite.encode_field(:x, "Year", type: :temporal)
+|> VegaLite.encode_field(:y, "relMatchCount", type: :quantitative)
+|> VegaLite.encode_field(:color, "Age", type: :nominal)
+```
+
+```elixir
+simultaneity_by_year = GoogleNgram.search("engagement")
+```
+
+<!-- livebook:{"attrs":{"chart_title":"Metamodernism: Use of \"engagement\" since 1815","height":null,"layers":[{"active":true,"chart_type":"bar","color_field":"Age","color_field_aggregate":null,"color_field_bin":null,"color_field_scale_scheme":null,"color_field_type":"nominal","data_variable":"simultaneity_by_year","geodata_color":"blue","latitude_field":null,"longitude_field":null,"x_field":"Year","x_field_aggregate":null,"x_field_bin":null,"x_field_scale_type":null,"x_field_type":"temporal","y_field":"relMatchCount","y_field_aggregate":null,"y_field_bin":null,"y_field_scale_type":null,"y_field_type":"quantitative"}],"vl_alias":"Elixir.VegaLite","width":700},"chunks":null,"kind":"Elixir.KinoVegaLite.ChartCell","livebook_object":"smart_cell"} -->
+
+```elixir
+VegaLite.new(width: 700, title: "Metamodernism: Use of \"engagement\" since 1815")
+|> VegaLite.data_from_values(simultaneity_by_year, only: ["Year", "relMatchCount", "Age"])
+|> VegaLite.mark(:bar)
+|> VegaLite.encode_field(:x, "Year", type: :temporal)
+|> VegaLite.encode_field(:y, "relMatchCount", type: :quantitative)
+|> VegaLite.encode_field(:color, "Age", type: :nominal)
+```
